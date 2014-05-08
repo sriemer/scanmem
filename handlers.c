@@ -72,18 +72,6 @@
 
 #define calloca(x,y) (memset(alloca((x) * (y)), 0x00, (x) * (y)))
 
-/* try to determine the size of a pointer */
-#ifndef ULONG_MAX
-#warning ULONG_MAX is not defined!
-#endif
-#if ULONG_MAX == 4294967295UL
-#define POINTER_FMT "%8lx"
-#elif ULONG_MAX == 18446744073709551615UL
-#define POINTER_FMT "%12lx"
-#else
-#define POINTER_FMT "%12lx"
-#endif
-
 bool handler__set(globals_t * vars, char **argv, unsigned argc)
 {
     unsigned block, seconds = 1;
@@ -243,7 +231,7 @@ bool handler__set(globals_t * vars, char **argv, unsigned argc)
                     if (loc.swath) {
                         value_t v;
                         value_t old;
-                        void *address = remote_address_of_nth_element(loc.swath, loc.index /* ,MATCHES_AND_VALUES */);
+                        uintptr_t address = remote_address_of_nth_element(loc.swath, loc.index /* ,MATCHES_AND_VALUES */);
 
                         /* copy val onto v */
                         /* XXX: valcmp? make sure the sizes match */
@@ -251,7 +239,7 @@ bool handler__set(globals_t * vars, char **argv, unsigned argc)
                         v.flags = old.flags = loc.swath->data[loc.index].match_info;
                         uservalue2value(&v, &userval);
                         
-                        show_info("setting *%p to %#"PRIx64"...\n", address, v.int64_value); 
+                        show_info("setting *"PTR_FMT" to %#"PRIx64"...\n", address, v.int64_value);
 
                         /* set the value specified */
                         if (setaddr(vars->target, address, &v) == false) {
@@ -276,7 +264,7 @@ bool handler__set(globals_t * vars, char **argv, unsigned argc)
                     /* Only actual matches are considered */
                     if (flags_to_max_width_in_bytes(reading_swath_index->data[reading_iterator].match_info) > 0)
                     {
-                        void *address = remote_address_of_nth_element(reading_swath_index, reading_iterator /* ,MATCHES_AND_VALUES */);
+                        uintptr_t address = remote_address_of_nth_element(reading_swath_index, reading_iterator /* ,MATCHES_AND_VALUES */);
 
                         /* XXX: as above : make sure the sizes match */
                                     
@@ -285,7 +273,7 @@ bool handler__set(globals_t * vars, char **argv, unsigned argc)
                         v.flags = old.flags = reading_swath_index->data[reading_iterator].match_info;
                         uservalue2value(&v, &userval);
 
-                        show_info("setting *%p to %"PRIx64"...\n", address, v.int64_value); 
+                        show_info("setting *"PTR_FMT" to %"PRIx64"...\n", address, v.int64_value);
 
                         if (setaddr(vars->target, address, &v) == false) {
                             show_error("failed to set a value.\n");
@@ -297,7 +285,7 @@ bool handler__set(globals_t * vars, char **argv, unsigned argc)
                     ++reading_iterator;
                     if (reading_iterator >= reading_swath_index->number_of_bytes)
                     {
-                        reading_swath_index = local_address_beyond_last_element(reading_swath_index /* ,MATCHES_AND_VALUES */);
+                        reading_swath_index = local_address_beyond_last_element_as_swath(reading_swath_index /* ,MATCHES_AND_VALUES */);
                         reading_iterator = 0;
                     }
                 }
@@ -399,29 +387,27 @@ bool handler__list(globals_t * vars, char **argv, unsigned argc)
                 break;
             }
 
-            void *address = remote_address_of_nth_element(reading_swath_index,
+            uintptr_t address = remote_address_of_nth_element(reading_swath_index,
                 reading_iterator /* ,MATCHES_AND_VALUES */);
-            unsigned long address_ul = (unsigned long)address;
             int region_id = 99;
-            unsigned long match_off = 0;
+            uintptr_t match_off = 0;
             const char *region_type = "??";
             /* get region info belonging to the match -
              * note: we assume the regions list and matches to be sorted
              */
             while (np) {
                 region_t *region = np->data;
-                unsigned long region_start = (unsigned long)region->start;
-                if (address_ul < region_start + region->size &&
-                  address_ul >= region_start) {
+                if (address < region->start + region->size &&
+                  address >= region->start) {
                     region_id = region->id;
-                    match_off = address_ul - region->load_addr;
+                    match_off = address - region->load_addr;
                     region_type = region_type_names[region->type];
                     break;
                 }
                 np = np->next;
             }
             fprintf(stdout, "[%2u] "POINTER_FMT", %2u + "POINTER_FMT
-                ", %5s, %s\n", i++, address_ul, region_id, match_off,
+                ", %5s, %s\n", i++, address, region_id, match_off,
                 region_type, v);
         }
 
@@ -429,8 +415,8 @@ bool handler__list(globals_t * vars, char **argv, unsigned argc)
         ++reading_iterator;
         if (reading_iterator >= reading_swath_index->number_of_bytes)
         {
-            assert(((matches_and_old_values_swath *)(local_address_beyond_last_element(reading_swath_index /* ,MATCHES_AND_VALUES */)))->number_of_bytes >= 0);
-            reading_swath_index = local_address_beyond_last_element(reading_swath_index /* ,MATCHES_AND_VALUES */);
+            assert((local_address_beyond_last_element_as_swath(reading_swath_index /* ,MATCHES_AND_VALUES */))->number_of_bytes >= 0);
+            reading_swath_index = local_address_beyond_last_element_as_swath(reading_swath_index /* ,MATCHES_AND_VALUES */);
             reading_iterator = 0;
         }
     }
@@ -732,7 +718,7 @@ bool handler__lregions(globals_t * vars, char **argv, unsigned argc)
 
         fprintf(stderr, "[%2u] "POINTER_FMT", %7lu bytes, %5s, "
                 POINTER_FMT", %c%c%c, %s\n", region->id,
-                (unsigned long)region->start, region->size,
+                region->start, region->size,
                 region_type_names[region->type], region->load_addr,
                 region->flags.read ? 'r' : '-',
                 region->flags.write ? 'w' : '-',
@@ -1136,7 +1122,7 @@ bool handler__watch(globals_t * vars, char **argv, unsigned argc)
     time_t t;
     match_location loc;
     value_t old_val;
-    void *address;
+    uintptr_t address;
 
     if (argc != 2) {
         show_error("was expecting one argument, see `help watch`.\n");
@@ -1182,7 +1168,7 @@ bool handler__watch(globals_t * vars, char **argv, unsigned argc)
     t = time(NULL);
     strftime(timestamp, sizeof(timestamp), "[%T]", localtime(&t));
 
-    show_info("%s monitoring %10p for changes until interrupted...\n", timestamp, address);
+    show_info("%s monitoring "POINTER_FMT" for changes until interrupted...\n", timestamp, address);
 
     while (true) {
 
@@ -1250,7 +1236,8 @@ bool handler__show(globals_t * vars, char **argv, unsigned argc)
 
 bool handler__dump(globals_t * vars, char **argv, unsigned argc)
 {
-    void *addr;
+    uintptr_t addr;
+    unsigned long long addr_ull;
     char *endptr;
     char *buf = NULL;
     int len;
@@ -1265,12 +1252,15 @@ bool handler__dump(globals_t * vars, char **argv, unsigned argc)
     
     /* check address */
     errno = 0;
-    addr = (void *)(strtoll(argv[1], &endptr, 16));
-    if ((errno != 0) || (*endptr != '\0'))
+    /* Note: long is not guaranteed to be 8 bytes on 64 bit systems and
+       sscanf() does not check with isxdigit() */
+    addr_ull = strtoull(argv[1], &endptr, 16);
+    if ((errno != 0) || (*endptr != '\0') || (addr_ull > UINTPTR_MAX))
     {
         show_error("bad address, see `help dump`.\n");
         return false;
     }
+    addr = (uintptr_t)addr_ull;
 
     /* check length */
     errno = 0;
@@ -1325,7 +1315,7 @@ bool handler__dump(globals_t * vars, char **argv, unsigned argc)
         for (i = 0; i + 16 < len; i += 16)
         {
             if (vars->options.backend == 0)
-                printf("%p: ", addr+i);
+                printf(PTR_FMT": ", addr+i);
             for (j = 0; j < 16; ++j)
             {
                 printf("%02X ", (unsigned char)(buf[buf_idx++]));
@@ -1343,7 +1333,7 @@ bool handler__dump(globals_t * vars, char **argv, unsigned argc)
         if (i < len)
         {
             if (vars->options.backend == 0)
-                printf("%p: ", addr+i);
+                printf(PTR_FMT": ", addr+i);
             for (j = i; j < len; ++j)
             {
                 printf("%02X ", (unsigned char)(buf[buf_idx++]));
@@ -1373,7 +1363,8 @@ bool handler__write(globals_t * vars, char **argv, unsigned argc)
 {
     int data_width = 0;
     const char *fmt = NULL;
-    void *addr;
+    uintptr_t addr;
+    unsigned long long addr_ull;
     char *buf = NULL;
     char *endptr;
     int datatype; /* 0 for numbers, 1 for bytearray, 2 for string */
@@ -1471,13 +1462,16 @@ bool handler__write(globals_t * vars, char **argv, unsigned argc)
 
     /* check address */
     errno = 0;
-    addr = (void *)strtoll(argv[2], &endptr, 16);
-    if ((errno != 0) || (*endptr != '\0'))
+    /* Note: long is not guaranteed to be 8 bytes on 64 bit systems and
+       sscanf() does not check with isxdigit() */
+    addr_ull = strtoull(argv[2], &endptr, 16);
+    if ((errno != 0) || (*endptr != '\0') || (addr_ull > UINTPTR_MAX))
     {
         show_error("bad address, see `help write`.\n");
         ret = false;
         goto retl;
     }
+    addr = (uintptr_t)addr_ull;
 
     buf = malloc(data_width + 8); /* allocate a little bit more, just in case */
     if (buf == NULL)

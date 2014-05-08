@@ -32,6 +32,7 @@ AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
+AC_TYPE_UINTPTR_T
 
 
 # check if termcap is present, sometimes required by readline

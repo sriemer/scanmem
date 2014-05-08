@@ -30,7 +30,8 @@ libscanmem_la_SOURCES = commands.h \
     target_memory_info_array.h \
     target_memory_info_array.c \
     value.h \
-    value.c 
+    value.c \
+    types.h
 
 libscanmem_la_LDFLAGS = -version-info 1:0:0
 

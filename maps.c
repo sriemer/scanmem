@@ -50,7 +50,8 @@ bool readmaps(pid_t target, list_t * regions)
     size_t len = 0;
     unsigned int code_regions = 0;
     bool is_exe = false;
-    unsigned long prev_end = 0, load_addr = 0;
+    unsigned long prev_end = 0;
+    uintptr_t load_addr = 0;
 
 #define MAX_LINKBUF_SIZE 256
     char linkbuf[MAX_LINKBUF_SIZE], *exename = linkbuf;
@@ -198,7 +199,7 @@ bool readmaps(pid_t target, list_t * regions)
                 /* initialise this region */
                 map->flags.read = true;
                 map->flags.write = true;
-                map->start = (void *) start;
+                map->start = start;
                 map->size = (unsigned long) (end - start);
                 map->type = type;
                 map->load_addr = load_addr;

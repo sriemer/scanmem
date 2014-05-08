@@ -26,7 +26,7 @@
 
 
 /* for convenience */
-#define SCAN_ROUTINE_ARGUMENTS (const value_t *new_value, const value_t *old_value, const uservalue_t *user_value, match_flags *saveflags, void *address) 
+#define SCAN_ROUTINE_ARGUMENTS (const value_t *new_value, const value_t *old_value, const uservalue_t *user_value, match_flags *saveflags, uintptr_t address)
 int (*g_scan_routine) SCAN_ROUTINE_ARGUMENTS;
 
 #define VALUE_COMP(a,b,field,op)    (((a)->flags.field && (b)->flags.field) && (get_##field(a) op get_##field(b)))

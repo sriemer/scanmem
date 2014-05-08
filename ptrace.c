@@ -117,9 +117,9 @@ bool detach(pid_t target)
  * consecutive addresses.
  */
 
-bool peekdata(pid_t pid, void *addr, value_t * result)
+bool peekdata(pid_t pid, uintptr_t addr, value_t *result)
 {
-    char *reqaddr = addr;
+    char *reqaddr = (char *)addr;
     int i, j;
     int shift_size1 = 0, shift_size2 = 0;
     char *last_address_gathered = 0;
@@ -167,7 +167,7 @@ bool peekdata(pid_t pid, void *addr, value_t * result)
         shift_size1 = shift_size2 = sizeof(int64_t);
         peekbuf.pid = pid;
         peekbuf.size = 0;
-        peekbuf.base = addr;
+        peekbuf.base = (char *)addr;
     }
 
     /* we need a ptrace() to complete request */
@@ -273,7 +273,7 @@ bool checkmatches(globals_t * vars,
 
     int reading_iterator = 0;
     matches_and_old_values_swath *writing_swath_index = (matches_and_old_values_swath *)vars->matches->swaths;
-    writing_swath_index->first_byte_in_child = NULL;
+    writing_swath_index->first_byte_in_child = 0;
     writing_swath_index->number_of_bytes = 0;
     
     /* used to fill in non-match regions */
@@ -299,7 +299,7 @@ bool checkmatches(globals_t * vars,
         value_t data_value;
         match_flags checkflags;
 
-        void *address = reading_swath.first_byte_in_child + reading_iterator;
+        uintptr_t address = reading_swath.first_byte_in_child + reading_iterator;
         
         /* Read value from this address */
         if (EXPECT(peekdata(vars->target, address, &data_value) == false, false)) {
@@ -380,7 +380,7 @@ bool checkmatches(globals_t * vars,
 }
 
 /* read region using /proc/pid/mem */
-ssize_t readregion(pid_t target, void *buf, size_t count, unsigned long offset)
+ssize_t readregion(pid_t target, void *buf, size_t count, uintptr_t offset)
 {
     char mem[32];
     int fd;
@@ -416,7 +416,7 @@ bool searchregions(globals_t * vars, scan_match_type_t match_type, const userval
     region_t *r;
     unsigned long total_scan_bytes = 0;
     unsigned long bytes_scanned = 0;
-    void *address = NULL;
+    uintptr_t address = 0;
 
 #if HAVE_PROCMEM
     unsigned char *data = NULL;
@@ -466,7 +466,7 @@ bool searchregions(globals_t * vars, scan_match_type_t match_type, const userval
     
     writing_swath_index = (matches_and_old_values_swath *)vars->matches->swaths;
     
-    writing_swath_index->first_byte_in_child = NULL;
+    writing_swath_index->first_byte_in_child = 0;
     writing_swath_index->number_of_bytes = 0;
     
     /* get total byte */
@@ -611,7 +611,7 @@ bool searchregions(globals_t * vars, scan_match_type_t match_type, const userval
     return detach(vars->target);
 }
 
-bool setaddr(pid_t target, void *addr, const value_t * to)
+bool setaddr(pid_t target, uintptr_t addr, const value_t *to)
 {
     value_t saved;
     int i;
@@ -621,7 +621,7 @@ bool setaddr(pid_t target, void *addr, const value_t * to)
     }
 
     if (peekdata(target, addr, &saved) == false) {
-        show_error("couldnt access the target address %10p\n", addr);
+        show_error("couldnt access the target address "POINTER_FMT"\n", addr);
         return false;
     }
     
@@ -654,7 +654,7 @@ bool setaddr(pid_t target, void *addr, const value_t * to)
     return detach(target);
 }
 
-bool read_array(pid_t target, void *addr, char *buf, int len)
+bool read_array(pid_t target, uintptr_t addr, char *buf, int len)
 {
     if (attach(target) == false) {
         return false;
@@ -664,7 +664,7 @@ bool read_array(pid_t target, void *addr, char *buf, int len)
     unsigned nread=0;
     ssize_t tmpl;
     while (nread < len) {
-        if ((tmpl = readregion(target, buf+nread, len-nread, (unsigned long)(addr+nread))) == -1) {
+        if ((tmpl = readregion(target, buf+nread, len-nread, addr+nread)) == -1) {
             /* no, continue with whatever data was read */
             break;
         } else {
@@ -698,7 +698,7 @@ bool read_array(pid_t target, void *addr, char *buf, int len)
 }
 
 /* TODO: may use /proc/<pid>/mem here */
-bool write_array(pid_t target, void *addr, const void *data, int len)
+bool write_array(pid_t target, uintptr_t addr, const void *data, int len)
 {
     int i,j;
     long peek_value;

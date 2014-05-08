@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <sys/types.h>          /*lint !e537 */
 
+#include "types.h"
 #include "scanroutines.h"
 #include "list.h"
 #include "value.h"
@@ -93,13 +94,13 @@ bool init();
 
 /* ptrace.c */
 bool detach(pid_t target);
-bool setaddr(pid_t target, void *addr, const value_t * to);
+bool setaddr(pid_t target, uintptr_t addr, const value_t *to);
 bool checkmatches(globals_t * vars, scan_match_type_t match_type, const uservalue_t *uservalue);
 bool searchregions(globals_t * vars, scan_match_type_t match_type, const uservalue_t *uservalue);
-bool peekdata(pid_t pid, void *addr, value_t * result);
+bool peekdata(pid_t pid, uintptr_t addr, value_t *result);
 bool attach(pid_t target);
-bool read_array(pid_t target, void *addr, char *buf, int len);
-bool write_array(pid_t target, void *addr, const void *data, int len);
+bool read_array(pid_t target, uintptr_t addr, char *buf, int len);
+bool write_array(pid_t target, uintptr_t addr, const void *data, int len);
 
 /* menu.c */
 bool getcommand(globals_t * vars, char **line);
