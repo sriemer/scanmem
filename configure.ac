@@ -10,7 +10,7 @@ LT_INIT
 
 IT_PROG_INTLTOOL
 
-AC_CHECK_FUNCS(memset strcasecmp strchr strdup strerror strtoul)
+AC_CHECK_FUNCS(memset strcasecmp strchr strdup strerror strtoul pread)
 
 AC_CHECK_HEADERS(fcntl.h limits.h stddef.h sys/time.h)
 

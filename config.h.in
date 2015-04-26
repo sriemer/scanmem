@@ -49,6 +49,9 @@
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
+/* Define to 1 if you have the `pread' function. */
+#undef HAVE_PREAD
+
 /* Enable /proc/pid/mem support */
 #undef HAVE_PROCMEM
 
