@@ -35,6 +35,14 @@ AC_TYPE_SSIZE_T
 AC_C_BIGENDIAN
 
 
+AC_MSG_CHECKING(whether /proc is mounted)
+if test "x`mount | grep -o ' on /proc '`" != "x on /proc "; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR(Please mount /proc., 1)
+else
+    AC_MSG_RESULT(yes)
+fi
+
 # also need to check if the file is zero'ed (some hardened systems)
 AC_CHECK_FILE([/proc/self/maps], [], [
     echo "This system does not seem to have /proc/pid/maps files."
