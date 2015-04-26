@@ -21,12 +21,6 @@
 
 #include "config.h"
 
-/* for pread */
-# ifdef _XOPEN_SOURCE
-#  undef _XOPEN_SOURCE
-# endif
-# define _XOPEN_SOURCE 500
-
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
