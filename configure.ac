@@ -43,14 +43,33 @@ else
     AC_MSG_RESULT(yes)
 fi
 
+self="/proc/self"
+maps_name="maps"
+AC_MSG_CHECKING(whether $self exists)
+if test -d $self; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+    self="/proc/curproc"
+    AC_MSG_CHECKING(whether $self exists)
+    if test -d $self; then
+        AC_MSG_RESULT(yes)
+        maps_name="map"
+    else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR(No directory for current process found., 1)
+    fi
+fi
+maps="$self/$maps_name"
+pid_maps="/proc/pid/$maps_name"
+
 # also need to check if the file is zero'ed (some hardened systems)
-AC_CHECK_FILE([/proc/self/maps], [], [
-    echo "This system does not seem to have /proc/pid/maps files."
-    exit 1
+AC_CHECK_FILE([$maps], [], [
+    AC_MSG_ERROR(This system does not seem to have $pid_maps files., 1)
 ])
 
 # also need to check this file works
-AC_CHECK_FILE([/proc/self/mem], [
+AC_CHECK_FILE([$self/mem], [
     # LARGEFILE support required for this to work
     AC_SYS_LARGEFILE
     AC_DEFINE(HAVE_PROCMEM, [1], [Enable /proc/pid/mem support])
