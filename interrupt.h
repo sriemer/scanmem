@@ -5,6 +5,11 @@
 #ifndef INTERRUPT_H
 #define INTERRUPT_H
 
+/* dirty hack for FreeBSD */
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+typedef sig_t sighandler_t;
+#endif
+
 /* small header file to manage interrupted commands */
 
 static sigjmp_buf jmpbuf;       /* used when aborting a command due to interrupt */
