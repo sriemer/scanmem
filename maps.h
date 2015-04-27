@@ -22,6 +22,7 @@
 #ifndef MAPS_H
 #define MAPS_H
 
+#include <unistd.h>
 #include "list.h"
 
 /* determine what regions we need */
