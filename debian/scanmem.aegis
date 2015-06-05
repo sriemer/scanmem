@@ -1,0 +1,19 @@
+<aegis>
+	<request>
+		<!--
+			* 'tcb' and 'CAP::dac_override' require the
+			  aegis-installer hack ('com.nokia.maemo' origin)
+			* 'tcb' lets scanmem have less credentials than the
+			  ptraced process - this is important
+			* 'CAP::dac_override' lets 'root' access 'user' files
+			  but we can do everything as 'user' if the ptraced
+			  process runs as 'user'
+		-->
+		<credential name="tcb" />
+		<!-- credential name="CAP::dac_override" / -->
+		<credential name="CAP::sys_ptrace" />
+
+		<for path="/usr/bin/scanmem" />
+		<for path="/usr/lib/libscanmem.so.1.0.0" />
+	</request>
+</aegis>

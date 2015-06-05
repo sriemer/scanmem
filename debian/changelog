@@ -1,0 +1,7 @@
+scanmem (0.15-1) harmattan; urgency=medium
+
+  * region type and load address (ASLR) support
+  * endianness detection and control
+  * MeeGo 1.2 Harmattan support
+
+ -- Sebastian Parschauer <s.parschauer@gmx.de>  Fri, 03 Apr 2015 16:49:19 +0200
