@@ -166,6 +166,17 @@ bool init()
     registercommand("dump", handler__dump, vars->commands, DUMP_SHRTDOC, DUMP_LONGDOC);
     registercommand("write", handler__write, vars->commands, WRITE_SHRTDOC, WRITE_LONGDOC);
     registercommand("option", handler__option, vars->commands, OPTION_SHRTDOC, OPTION_LONGDOC);
+    registercommand("number", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("int", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("int8", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("int16", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("int32", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("int64", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("float", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("float32", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("float64", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("bytearray", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
+    registercommand("string", handler__type, vars->commands, TYPE_SHRTDOC, TYPE_LONGDOC);
 
     /* commands beginning with __ have special meaning */
     registercommand("__eof", handler__eof, vars->commands, NULL, NULL);

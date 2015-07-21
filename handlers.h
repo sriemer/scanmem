@@ -310,6 +310,11 @@ bool handler__write(globals_t * vars, char **argv, unsigned argc);
                  "Example:\n" \
                  "\toption scan_data_type int32\n"
 
-bool handler__option(globals_t * vars, char **argv, unsigned argc);
+bool handler__option(globals_t *vars, char **argv, unsigned argc);
+
+#define TYPE_SHRTDOC "short form for \"option scan_data_type <type>\""
+#define TYPE_LONGDOC TYPE_SHRTDOC
+
+bool handler__type(globals_t *vars, char **argv, unsigned argc);
 
 #endif /* HANDLERS_H */

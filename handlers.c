@@ -1677,3 +1677,10 @@ bool handler__option(globals_t * vars, char **argv, unsigned argc)
     }
     return true;
 }
+
+bool handler__type(globals_t *vars, char **argv, unsigned argc)
+{
+	char *opt_argv[3] = { "option", "scan_data_type", argv[0] };
+
+	return handler__option(vars, opt_argv, 3);
+}
