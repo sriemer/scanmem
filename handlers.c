@@ -294,6 +294,10 @@ bool handler__set(globals_t * vars, char **argv, unsigned argc)
 
         if (cont) {
             sleep(1);
+            if (sm_check_process(vars->target) != PROC_RUNNING) {
+                vars->target = 0;
+                break;
+            }
         } else {
             break;
         }

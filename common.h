@@ -22,6 +22,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <sys/types.h>
+
 #ifndef MIN
 # define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
@@ -68,5 +70,16 @@
 #else
 # define util_getenv getenv
 #endif
+
+/* states returned by sm_check_process() - Sync with GUI! */
+enum pstate {
+    PROC_RUNNING,
+    PROC_ERR,  /* error during detection */
+    PROC_DEAD,
+    PROC_ZOMBIE
+};
+
+/* Function declarations */
+enum pstate sm_check_process(pid_t pid);
 
 #endif /* COMMON_H */
