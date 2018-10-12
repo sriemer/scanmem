@@ -11,3 +11,9 @@ SETTINGS = {'scan_data_type':'int32'
            ,'lock_data_type':'int32'
            ,'search_scope'  : 1      # normal
            }
+
+# Keep this in sync with the enum in libscanmem!
+PROC_RUNNING = 0
+PROC_ERR = 1
+PROC_DEAD = 2
+PROC_ZOMBIE = 3
