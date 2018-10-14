@@ -1,13 +1,14 @@
 language: c
 sudo: required
-compiler: gcc-6
+
+services:
+  - docker
 
 env:
   global:
   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
   #   via the "travis encrypt" command using the project repo's public key
   - secure: "C3Gd8W9U0yQIxnUkcKlzicB2iOeZ42NPpVXTOnigjoc2UoI4eVYlDjEZjccZAIn0wHUguircvBt0eyLD7cuNf2mTozJ21BG0NpMdYbG1n/aVchnJBr6rldb2X3kVmQCj50LQKm+aINbK1qSs56VIUwNepPiul+HPMV6sL5sQ5M0="
-  - PATH=/usr/lib/binutils-2.26/bin:${PATH}
   - ASAN_OPTIONS='halt_on_error=1'
   - UBSAN_OPTIONS='halt_on_error=1'
 
@@ -16,23 +17,28 @@ before_install:
 
 addons:
   apt:
-    sources:
-    - ubuntu-toolchain-r-test
     packages:
-    - gcc-6 binutils-2.26 intltool
+    - gcc binutils intltool
   # Coverity scan add-on, fires only when pushing to the `coverity_scan` branch
   coverity_scan:
     project:
-      name: "scanmem/scanmem"
+      name: "sriemer/scanmem"
       description: "Build submitted via Travis CI"
-    notification_email: andreastacchiotti@gmail.com
-    build_command_prepend: "./autogen.sh && ./configure CC=gcc"
+    notification_email: s.parschauer@gmx.de
+    build_command_prepend: "./autogen.sh && ./configure"
     build_command: "make"
     branch_pattern: coverity_scan
 
 script:
   - if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then exit ; fi
-  - ./autogen.sh && ./configure --enable-gui
-  - make CFLAGS='-O2 -fsanitize=address,undefined'
-  # Testing requires `sudo` for `ptrace()`
-  - sudo make check VERBOSE=1
+  - docker pull ubuntu:bionic
+  # mount the project git directory to the container and
+  # use it as working directory
+  - docker run -t -d --name="bionic" -v /home/travis/build/${PROJECT_NAME}:/scanmem -w /scanmem ubuntu:bionic /bin/bash
+  - docker ps
+  - docker exec bionic /bin/sh -c "apt-get update && apt-get upgrade -y"
+  - docker exec bionic /bin/sh -c "apt-get install -y git gcc binutils libtool intltool make libreadline-dev python"
+  - docker exec bionic /bin/sh -c "gcc --version"
+  - docker exec bionic /bin/bash -c "./autogen.sh && ./configure --enable-gui"
+  - docker exec bionic /bin/bash -c "make CFLAGS='-O2 -fsanitize=address,undefined'"
+  - docker exec bionic /bin/bash -c "make check VERBOSE=1"
