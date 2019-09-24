@@ -1,0 +1,64 @@
+{
+   Suppress_rl_initialize
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:rl_initialize
+   ...
+}
+{
+   Suppress_rl_set_prompt
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:rl_set_prompt
+   ...
+}
+{
+   Suppress_add_history
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:add_history
+   ...
+}
+{
+   Suppress_readline_internal_setup
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:readline_internal_setup
+   ...
+}
+{
+   Suppress_replace_history_entry
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:replace_history_entry
+   ...
+}
+{
+   Suppress_rl_copy_text
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:rl_copy_text
+   ...
+}
+{
+   Suppress_rl_redisplay
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:rl_redisplay
+   ...
+}
+{
+   Suppress_rl_add_undo
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:rl_add_undo
+   ...
+}
